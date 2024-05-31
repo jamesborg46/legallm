@@ -1,0 +1,34 @@
+repos:
+  - repo: https://github.com/ambv/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+        language: python
+        entry: black
+        minimum_pre_commit_version: 2.9.2
+        require_serial: true
+        files: ^(deep_mmnl|mlops|tests)/
+        types_or: [python, pyi]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+        files: ^(deep_mmnl|mlops|tests)/
+        language_version: python3
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 4.0.1
+    hooks:
+    - id: flake8
+      args: ["--config", "setup.cfg"]
+      files: ^(deep_mmnl|mlops|tests)/
+      language_version: python3
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v0.971
+    hooks:
+    - id: mypy
+      additional_dependencies: ['types_requests', 'types_toml']
+      files: ^(deep_mmnl|mlops|tests)/
