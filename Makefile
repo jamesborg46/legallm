@@ -37,6 +37,10 @@ dev-setup: init-virtualenv
 	@${PIP} install -e .[dev]
 	${PIP} freeze
 
+notebook-setup:
+	${PIP} install jupyterlab
+	@${PY} -m ipykernel install --user --name=labellm
+
 setup: clean dev-setup
 	@${PRECOMMIT_HOOK} install
 
