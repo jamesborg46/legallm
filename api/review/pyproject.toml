@@ -1,0 +1,95 @@
+[project]
+name = "legallm"
+version = "0.1.0"
+requires-python = "~=3.12"
+dependencies = [
+    "numpy==1.26.4",
+    "pandas==2.2.2",
+    "setuptools==70.0.0",
+    "sweetviz==2.3.1",
+    "openpyxl==3.1.3",
+    "openai==1.30.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "isort==5.12.0",
+    "pre-commit~=2.20",
+    "mypy==0.971",
+    "flake8~=5.0",
+    "black==22.3.0",
+    "build==1.0.3",
+    "pytest~=7.1",
+    "pytest-cov==4.0.0",
+    "pytest-mock==3.10.0",
+    "pytest-xdist==3.3.1",
+    "pytest-benchmark==4.0.0",
+    "pytest-integration==0.2.3",
+    "pytest-lazy-fixture==0.6.3",
+]
+
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.black]
+# Black: Opinionated code formatter
+# Minimizes diffs, minimal config options
+# https://github.com/psf/black
+line-length = 79
+target-version = ['py39']
+include = '\.pyi?$'
+
+# The first grouping are directories
+# hidden dotDirectories have a backslash as an escape character
+# single files come after
+
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.pytest_cache
+    | \.tox
+    | \.venv
+    | \.env
+    | env
+    | venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+)
+'''
+
+
+# Sort and format imports
+# Settings are compatible with [tool.black] from above
+[tool.isort]
+profile="black"
+multi_line_output=3
+include_trailing_comma="True"
+force_grid_wrap=0
+use_parentheses="True"
+line_length=79
+known_third_party = "numpy,pandas,pytest,setuptools"
+
+[[tool.mypy.overrides]]
+module = [
+    'pandas.*',
+    'tqdm.*',
+    'accelerate.*',
+    'sklearn.*',
+	'scipy.*',
+	'mlflow.*',
+	'dill.*',
+    'matplotlib.*',
+    'plotly.*',
+    'databricks.*'
+]

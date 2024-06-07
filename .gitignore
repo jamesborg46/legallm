@@ -5,6 +5,8 @@ __pycache__/
 .venv
 
 **/*tfstate*
+**/.terraform*
+**/.terraform/
 
 api/upload/.lambda_build/
 
