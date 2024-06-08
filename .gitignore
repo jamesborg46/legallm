@@ -4,6 +4,10 @@ __pycache__/
 ## virtual env
 .venv
 
+**/*tfstate*
+
+api/upload/.lambda_build/
+
 ## vscode
 .vscode
 
@@ -231,9 +235,9 @@ Cargo.lock
 
 .exctxv2.yaml
 
-
 # End of https://www.toptal.com/developers/gitignore/api/python,macos,c++,rust
 
 # jupter notebook
 *.ipynb
 wandb/
+
