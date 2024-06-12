@@ -1,0 +1,95 @@
+[project]
+name = "legallm-notebooks"
+version = "0.16.0"
+requires-python = "~=3.12"
+dependencies = [
+    "torch>=2",
+    "pandas",
+    "accelerate",
+    "plotly",
+    "numpy",
+    "pysbd"
+]
+
+[project.optional-dependencies]
+dev = [
+    "isort",
+    "pre-commit",
+    "mypy",
+    "flake8",
+    "black",
+    "build",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-xdist",
+    "pytest-benchmark",
+    "pytest-integration",
+    "pytest-lazy-fixture",
+]
+
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.black]
+# Black: Opinionated code formatter
+# Minimizes diffs, minimal config options
+# https://github.com/psf/black
+line-length = 79
+target-version = ['py39']
+include = '\.pyi?$'
+
+# The first grouping are directories
+# hidden dotDirectories have a backslash as an escape character
+# single files come after
+
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.pytest_cache
+    | \.tox
+    | \.venv
+    | \.env
+    | env
+    | venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+)
+'''
+
+
+# Sort and format imports
+# Settings are compatible with [tool.black] from above
+[tool.isort]
+profile="black"
+multi_line_output=3
+include_trailing_comma="True"
+force_grid_wrap=0
+use_parentheses="True"
+line_length=79
+known_third_party = "numpy,pandas,pytest,setuptools"
+
+[[tool.mypy.overrides]]
+module = [
+    'pandas.*',
+    'tqdm.*',
+    'accelerate.*',
+    'sklearn.*',
+	'scipy.*',
+	'mlflow.*',
+	'dill.*',
+    'matplotlib.*',
+    'plotly.*',
+    'databricks.*'
+]

@@ -1,4 +1,3 @@
-*.ipynb
 __pycache__/
 
 ## virtual env
@@ -236,10 +235,4 @@ Cargo.lock
 .idea
 
 .exctxv2.yaml
-
-# End of https://www.toptal.com/developers/gitignore/api/python,macos,c++,rust
-
-# jupter notebook
-*.ipynb
-wandb/
-
+**/.virtual_documents/
