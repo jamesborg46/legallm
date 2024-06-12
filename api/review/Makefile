@@ -1,6 +1,9 @@
 ENV := .venv
+LAMBDA_ENV := .lambda_build
 PIP := ${ENV}/bin/pip3
+LAMBDA_PIP := ${LAMBDA_ENV}/bin/pip3
 PY := ${ENV}/bin/python
+PY_VER := python3.12
 PY_TEST := $(ENV)/bin/pytest
 FLAKE8 := $(ENV)/bin/flake8
 BLACK := $(ENV)/bin/black
@@ -23,14 +26,14 @@ clean-py:
 clean-env:
 	rm -rf ./$(ENV)
 
+clean-lambdaenv:
+	rm -rf ./$(LAMBDA_ENV)
+
 clean-dist:
 	rm -rf ./dist
 
-test-coverage:
-	@${PY_TEST} --cov deep_mmnl --cov-config deep_mmnl/.coveragerc --benchmark-skip --without-integration --cov-report term-missing
-
 init-virtualenv:
-	test -d $(ENV) || python3.12 -m venv $(ENV)
+	test -d $(ENV) || $(PY_VER) -m venv $(ENV)
 	@${PIP} install -U pip
 
 dev-setup: init-virtualenv
@@ -60,14 +63,19 @@ install: check-whl
 
 build-and-install: clean init-virtualenv build install
 
-test:
-	@${PY_TEST} --benchmark-skip --without-integration
-
-test-integration:
-	@${PY_TEST} integration
-
-benchmark:
-	@${PY_TEST} --benchmark-only
+init-lambdaenv:
+	test -d $(LAMBDA_ENV) || ${PY_VER} -m venv $(LAMBDA_ENV)
+	@${LAMBDA_PIP} install -U pip
+	
+lambda-build: clean-lambdaenv init-lambdaenv
+	rm -rf lambdabuild
+	mkdir lambdabuild
+	@${LAMBDA_PIP} install -e .
+	${LAMBDA_PIP} freeze
+	cp -r ${LAMBDA_ENV}/lib/${PY_VER}/site-packages/* lambdabuild
+	cp lambda_function.py lambdabuild/
+	cd lambdabuild && zip -r ../my_deployment_package.zip .
+	rm -rf lambdabuild
 
 lint: flake8-check black-check issort-check mypy-check
 
