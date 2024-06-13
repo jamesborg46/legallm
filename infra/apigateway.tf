@@ -1,3 +1,27 @@
+resource "aws_api_gateway_api_key" "api_key" {
+  name        = "legal_contract_review_api_key"
+  description = "API key for legal contract review service"
+  enabled     = true
+
+  tags = var.tags
+}
+
+resource "aws_api_gateway_usage_plan" "usage_plan" {
+  name = "legal_contract_review_usage_plan"
+  api_stages {
+    api_id = aws_api_gateway_rest_api.legallm_api.id
+    stage  = aws_api_gateway_stage.file_upload_stage.stage_name
+  }
+
+  tags = var.tags
+}
+
+resource "aws_api_gateway_usage_plan_key" "usage_plan_key" {
+  key_id        = aws_api_gateway_api_key.api_key.id
+  key_type      = "API_KEY"
+  usage_plan_id = aws_api_gateway_usage_plan.usage_plan.id
+}
+
 resource "aws_api_gateway_rest_api" "legallm_api" {
   name        = "legallm_api"
   description = "API for uploading and reviewing legal contract files"
@@ -18,6 +42,7 @@ resource "aws_api_gateway_method" "gateway_methods" {
   resource_id   = aws_api_gateway_resource.gateway_resources[each.key].id
   http_method   = each.value.method
   authorization = "NONE"
+  api_key_required = true
 }
 
 resource "aws_api_gateway_integration" "gateway_integrations" {
