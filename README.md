@@ -15,6 +15,13 @@ a POST request (requiring an a API token which can be provided on request) to
 the endpoints currently hosted at https://legallm.online
 
 
+# TODO
+- [ ] Implemente terraform code for the hosted AWS SageMaker CNN model
+- [ ] Update/Add function/class documentation and better organize code
+- [ ] Implement unit tests
+- [ ] Implement CI/CD for automatic deployment
+
+
 # Downloading the Data
 The SBD Adjudicatory decisions dataset, used for model training and evaluation,
 as well as Contract Understanding Atticus Dataset (CUAD v1) which can be used
