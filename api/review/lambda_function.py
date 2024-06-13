@@ -13,27 +13,30 @@ s3_client = boto3.client("s3")
 dynamodb_client = boto3.client("dynamodb")
 
 SYSTEM_PROMPT = """
-You are an experienced lawyer, your task is to meticulously review contracts currently being drafted. Your intended audience is business people, who may not have extensive legal knowledge., and the contracts you are reviewing are standalone agreements between the parties. Your goal is to identify any legal issues that could potentially affect your client’s legal rights or obligations such as language in the contract which does not meet the standard or requirement of the party you represent. These issues could be points of contention, ambiguities, potential risks, or compliance matters that could lead to a dispute or liability. You will first be provided with the full contract for context. You will subsequently be presented with smaller sections of the contract, which you should provide feedback on. Your feedback should be strictly formatted as a JSON object as follows:
+You are an experienced lawyer, your task is to meticulously review contractscurrently being drafted. Your intended audience is business people, who may not have extensive legal knowledge., and the contracts you are reviewing are standalone agreements between the parties. Your goal is to identify any legal issues that could potentially affect your client’s legal rights or obligations such as language in the contract which does not meet the standard or requirement of the party you represent. These issues could be points of contention, ambiguities, potential risks, or compliance matters that could lead to a dispute or liability. You will first be provided with the full contract for context. You will subsequently be presented with smaller sections of the contract, which you should provide feedback on. Your feedback should be strictly formatted as a JSON object as follows:
 {
     “issue_found”: <bool>,
     “reworded”: <str>,
     “feedback”: <str>,
+    "severity": <"high" OR "medium" or "low">
 }
-Where issue_found indicates if there is any issue with the language. When there is no issue, reworded and feedback can be left as empty or as null. When an issue is found, “reworded” should provide the suggested rewording, and “feedback” should provide the reasoning behind the suggestion.
+Where issue_found indicates if there is any issue with the language. When there is no issue, "reworded", "feedback" and
+"severity" can be left as empty or as null. When an issue is found, “reworded” should provide the suggested rewording,
+and “feedback” should provide the reasoning behind the suggestion.
 """
 
 
 def lambda_handler(event, context):
     try:
         # Add logging for incoming event
-        print("Received event:", json.dumps(event))
+        logging.debug("Received event:", json.dumps(event))
 
         body = json.loads(event["body"])
         # Get the file ID from the query parameters
         file_id = body["id"]
         review_query = body["review"]
-        print(f"Processing file ID: {file_id}")
-        print(f"Review query: {review_query}")
+        logging.debug(f"Processing file ID: {file_id}")
+        logging.debug(f"Review query: {review_query}")
 
         # Fetch metadata from DynamoDB
         file_table = os.environ["DYNAMODB_FILE_TABLE"]
@@ -51,7 +54,7 @@ def lambda_handler(event, context):
         # Fetch the original text file from S3
         s3_response = s3_client.get_object(Bucket=s3_bucket, Key=original_key)
         original_text = s3_response["Body"].read().decode("utf-8")
-        print(original_text[:100])
+        logging.debug(original_text[:100])
 
         initial_prompt = f"""
         I will first provide you with the full contract for context. Please
@@ -89,15 +92,31 @@ def lambda_handler(event, context):
         }
 
         s3_bucket = os.environ["S3_BUCKET"]
-        dynamodb_table = os.environ["DYNAMODB_FILE_TABLE"]
 
-        resp = bedrock_client.invoke_model(**request)
-        resp_json = json.loads(resp["body"].read())
+        for i in range(3):
+            resp = bedrock_client.invoke_model(**request)
+            resp_json = json.loads(resp["body"].read())
+            review = resp_json["content"][-1]["text"]
 
-        print("Hello")
+            try:
+                json.loads(review, strict=False)
+                logger.debug(f"Review response: {review}")
+                break
+            except Exception as e:
+                logger.warning(
+                    f"Failed to parse response as JSON: {review} on "
+                    f"attempt {i}"
+                )
+                logger.warning(f"Error: {str(e)} encountered, retrying...")
+                if i == 2:
+                    logger.error(
+                        "Failed to parse response as JSON after 3 attempts"
+                    )
+                    raise ValueError("Failed to parse response as JSON")
+
         return {
             "statusCode": 200,
-            "body": json.dumps(resp_json),
+            "body": review,
         }
 
     except Exception as e:

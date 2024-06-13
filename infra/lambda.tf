@@ -5,7 +5,7 @@ resource "aws_lambda_function" "lambda_functions" {
   role          = aws_iam_role.lambda_role.arn
   handler       = "lambda_function.lambda_handler"
   runtime       = "python3.12"
-  timeout       = 60
+  timeout       = 120
   memory_size   = 128
 
   source_code_hash = filebase64sha256(each.value.package_file)
