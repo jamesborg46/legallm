@@ -9,5 +9,5 @@ curl -L https://zenodo.org/records/4595826/files/CUAD_v1.zip\?download\=1 -o $SC
     unzip $SCRIPTDIR/CUAD_v1.zip -d $SCRIPTDIR/../data && \
     rm $SCRIPTDIR/CUAD_v1.zip
 
-# Install the LegalBench Dataset
-git clone https://huggingface.co/datasets/nguha/legalbench $SCRIPTDIR/../data/
+# Install the SBD Adjudicatory Decisions Dataset
+git clone git@github.com:jsavelka/sbd_adjudicatory_dec.git $SCRIPTDIR/../data/sbd_adjudicatory_dec
