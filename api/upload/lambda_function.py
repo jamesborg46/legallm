@@ -12,23 +12,7 @@ logger = logging.getLogger()
 
 s3_client = boto3.client("s3")
 dynamodb_client = boto3.client("dynamodb")
-
-
-def segment_text(text):
-    # Load the `punkt` tokenizer model
-    pst = PunktSentenceTokenizer()
-
-    # Split the text by new lines
-    lines = text.splitlines()
-
-    # Tokenize within each split
-    sentences = []
-    for line in lines:
-        line = line.strip()
-        if line:
-            sentences.extend(pst.tokenize(line))
-
-    return sentences
+sagemaker_client = boto3.client("sagemaker-runtime")
 
 
 def lambda_handler(event, context):
@@ -58,15 +42,22 @@ def lambda_handler(event, context):
         # Save the original text file to S3
         s3_client.put_object(Bucket=s3_bucket, Key=orig_key, Body=file_content)
 
-        segmented_text = segment_text(file_content)
-        segmented_json = json.dumps(segmented_text)
+        response = sagemaker_client.invoke_endpoint(
+            EndpointName=os.environ["MODEL_ENDPOINT_NAME"],
+            ContentType="text/plain",
+            Body=bytes(file_content, "utf-8"),
+        )
+
+        body = json.loads(response["Body"].read().decode())
+        segmented_text = body["segments"]
+        sentence_ends = body["ends"]
 
         logger.info(f"Segmented text into {len(segmented_text)} sentences.")
         logger.info(f"First three sentences: {segmented_text[:3]}")
 
         # Save the structured json file to S3
         s3_client.put_object(
-            Bucket=s3_bucket, Key=structured_key, Body=segmented_json
+            Bucket=s3_bucket, Key=structured_key, Body=json.dumps(body)
         )
 
         # Add an entry to DynamoDB
@@ -85,7 +76,7 @@ def lambda_handler(event, context):
         return {
             "statusCode": 200,
             "body": json.dumps(
-                {"structured_text": segmented_json, "file_id": file_id}
+                {"structured_text": segmented_text, "file_id": file_id}
             ),
         }
 
